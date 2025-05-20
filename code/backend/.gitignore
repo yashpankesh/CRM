@@ -21,3 +21,5 @@ static/
 # OS or Editor Folders
 .DS_Store
 .vscode/
+
+.env
