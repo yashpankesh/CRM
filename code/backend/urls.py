@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(('apps.accounts.urls', 'accounts'), namespace='accounts')),
     path('api/', include(('apps.property.urls', 'property'), namespace='property')),
+    path('api/', include(('apps.leads.urls', 'leads'), namespace='leads')),
 ]
 
 # Add media URL configuration for property images

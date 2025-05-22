@@ -13,7 +13,7 @@ const LoginCard = () => {
   const location = useLocation()
   const from = location.state?.from?.pathname || "/dashboard"
 
-  const isDark = theme === "dark"
+const isDark = theme === "dark"
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -52,18 +52,18 @@ const LoginCard = () => {
       } bg-[size:30px_30px] p-4`}
     >
       <div
-        className={`w-full max-w-[900px] min-h-[500px] md:h-[600px] rounded-[20px] ${
-          isDark ? "bg-gray-800" : "bg-white"
-        } shadow-xl flex overflow-hidden relative`}
+        className={`w-full max-w-[900px] min-h-[500px] max-h-[90vh] md:h-[600px] md:max-h-[85vh] rounded-[20px] ${isDark ? "bg-gray-800" : "bg-white"
+          } shadow-xl flex overflow-hidden relative`}
       >
         <div className={`w-full ${isDark ? "bg-gray-800" : "bg-white"}`}></div>
         <div className="hidden md:block w-[40%] bg-[#5B5BF0] h-full"></div>
 
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div
-            className={`w-full h-full md:w-[90%] md:h-[500px] ${
-              isDark ? "bg-gray-800" : "bg-white"
-            } md:rounded-[12px] md:shadow-2xl flex flex-col md:flex-row overflow-hidden`}
+         <div
+            className={`w-full h-full max-h-full overflow-y-auto md:w-[90%] md:h-[90%] md:max-h-[500px]
+                ${isDark ? "bg-gray-800" : "bg-white"} 
+                md:rounded-[12px] md:shadow-2xl 
+                flex flex-col md:flex-row`}
           >
             {/* Left Blue Section - Hidden on mobile, visible on md and up */}
             <div className="hidden md:flex w-1/3 bg-[#5B5BF0] text-white flex-col justify-center items-center p-6">
@@ -127,9 +127,19 @@ const LoginCard = () => {
                   </div>
 
                   <div className="mb-6">
-                    <label className={`block text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"} mb-1`}>
-                      Password
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className={`block text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                        Password
+                      </label>
+                      <a
+                        href="/forgot-password"
+                        className={`text-sm ${
+                          isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+                        }`}
+                      >
+                        Forgot Password?
+                      </a>
+                    </div>
                     <input
                       type="password"
                       name="password"

@@ -34,15 +34,9 @@ import {
 } from "lucide-react"
 import { toast } from "react-toastify"
 import Spinner from "../components/common/Spinner"
-import LeadService from "../services/leadService"
-import UserService from "../services/UserService"
-
 
 // ===== useUserRole Hook =====
-// Replace the useUserRole hook in Leads.jsx
 function useUserRole() {
-  const { user } = useAuth() // Now properly using user from context
-  
   const rolePermissions = {
     admin: [
       "create_leads",
@@ -52,36 +46,29 @@ function useUserRole() {
       "import_leads",
       "export_leads",
       "assign_leads",
-      "create_users",
+      "create_users", // Only admin can create users
     ],
-    manager: [
-      "create_leads", 
-      "edit_leads", 
-      "delete_leads", 
-      "view_all_leads", 
-      "import_leads", 
-      "export_leads", 
-      "assign_leads"
-    ],
-    agent: [
-      "create_leads", 
-      "edit_leads", 
-      "view_all_leads"
-    ],
-    viewer: [
-      "view_all_leads"
-    ],
+    manager: ["create_leads", "edit_leads", "view_all_leads", "import_leads", "export_leads", "assign_leads"],
+    agent: ["create_leads", "edit_leads", "view_all_leads"],
+    viewer: ["view_all_leads"],
   }
 
-  const userRole = user?.role || 'agent' // Default to agent if no role
+  // In a real app, this would come from your auth context or API
+  const [userRole, setUserRole] = useState("admin")
 
   const hasPermission = (permission) => {
-    return rolePermissions[userRole]?.includes(permission) || false
+    return rolePermissions[userRole].includes(permission)
+  }
+
+  // For demo purposes, allow changing the role
+  const changeRole = (role) => {
+    setUserRole(role)
   }
 
   return {
     userRole,
     hasPermission,
+    changeRole,
   }
 }
 
@@ -1604,121 +1591,121 @@ function LeadDetailsDialog({ isOpen, onClose, lead, onUpdate, onDelete, users, c
 // ===== Main Leads Component =====
 // NOTE: sampleLeads and sampleUsers are mutable and modified directly.
 // This is okay for a demo but not for production with a real backend.
-// const sampleUsers = [
-//   { id: 1, name: "Alex Johnson", role: "Sales Manager", avatar: "/avatars/alex.jpg" },
-//   { id: 2, name: "Maria Rodriguez", role: "Sales Agent", avatar: "/avatars/maria.jpg" },
-//   { id: 3, name: "David Wilson", role: "Sales Agent", avatar: "/avatars/david.jpg" },
-//   { id: 4, name: "James Chen", role: "Sales Agent", avatar: "/avatars/james.jpg" },
-//   { id: 5, name: "Laura Miller", role: "Sales Agent", avatar: "/avatars/laura.jpg" },
-// ];
+const sampleUsers = [
+  { id: 1, name: "Alex Johnson", role: "Sales Manager", avatar: "/avatars/alex.jpg" },
+  { id: 2, name: "Maria Rodriguez", role: "Sales Agent", avatar: "/avatars/maria.jpg" },
+  { id: 3, name: "David Wilson", role: "Sales Agent", avatar: "/avatars/david.jpg" },
+  { id: 4, name: "James Chen", role: "Sales Agent", avatar: "/avatars/james.jpg" },
+  { id: 5, name: "Laura Miller", role: "Sales Agent", avatar: "/avatars/laura.jpg" },
+];
 
-// const sampleLeads = [
-//   {
-//     id: 1,
-//     name: "John Smith",
-//     email: "john.smith@example.com",
-//     phone: "+1234-567-8901",
-//     status: "New",
-//     source: "Website",
-//     interest: "Green Valley Homes",
-//     assignedTo: "Alex Johnson",
-//     assignedToId: 1,
-//     priority: "Medium",
-//     notes: "Interested in 3-bedroom properties",
-//     created: "2025-04-15T10:30:00",
-//     lastUpdated: "2025-04-15T10:30:00",
-//     lastActivity: "Added as new lead",
-//     tags: ["Residential", "First-time buyer"],
-//     company: "Tech Solutions Inc.",
-//     position: "Software Engineer",
-//     budget: "$500,000 - $700,000",
-//     timeline: "3-6 months",
-//     requirements: "3 bedrooms, 2 bathrooms, garage, near schools",
-//   },
-//   // ... (other sample leads remain the same)
-//   {
-//       id: 2,
-//       name: "Emily Johnson",
-//       email: "emily.j@example.com",
-//       phone: "+1345-678-9012",
-//       status: "Contacted",
-//       source: "WhatsApp",
-//       interest: "Urban Heights Tower",
-//       assignedTo: "Maria Rodriguez",
-//       assignedToId: 2,
-//       priority: "High",
-//       created: "2025-04-14T14:45:00",
-//       lastUpdated: "2025-04-15T09:15:00",
-//       lastActivity: "Scheduled call for tomorrow",
-//       tags: ["Commercial", "Investor"],
-//       company: "Johnson Investments",
-//       position: "Investment Manager",
-//       budget: "$1,000,000+",
-//       timeline: "1-3 months",
-//       requirements: "Office space, downtown location, modern amenities",
-//     },
-//     {
-//       id: 3,
-//       name: "Michael Rodriguez",
-//       email: "mrodriguez@example.com",
-//       phone: "+1456-789-0123",
-//       status: "Qualified",
-//       source: "Facebook",
-//       interest: "Lakeside Villas",
-//       assignedTo: "David Wilson",
-//       assignedToId: 3,
-//       priority: "Medium",
-//       created: "2025-04-13T11:20:00",
-//       lastUpdated: "2025-04-14T16:30:00",
-//       lastActivity: "Completed site visit",
-//       tags: ["Residential", "Vacation home"],
-//       budget: "$800,000 - $1,200,000",
-//       timeline: "6-12 months",
-//       requirements: "Waterfront property, 4+ bedrooms, pool",
-//     },
-//     {
-//       id: 4,
-//       name: "Sarah Thompson",
-//       email: "sthompson@example.com",
-//       phone: "+1567-890-1234",
-//       status: "Converted",
-//       source: "Referral",
-//       interest: "Sunset Apartments",
-//       assignedTo: "James Chen",
-//       assignedToId: 4,
-//       priority: "Low",
-//       created: "2025-04-12T09:00:00",
-//       lastUpdated: "2025-04-14T11:45:00",
-//       lastActivity: "Signed purchase agreement",
-//       tags: ["Residential", "Downsizing"],
-//       company: "Thompson Design",
-//       position: "Creative Director",
-//       budget: "$300,000 - $450,000",
-//       timeline: "Immediate",
-//       requirements: "2 bedrooms, modern design, close to downtown",
-//     },
-//     {
-//       id: 5,
-//       name: "David Wilson",
-//       email: "dwilson@example.com",
-//       phone: "+1678-901-2345",
-//       status: "Dropped",
-//       source: "Direct Call",
-//       interest: "Metro Business Park",
-//       assignedTo: "Laura Miller",
-//       assignedToId: 5,
-//       priority: "Low",
-//       created: "2025-04-11T15:10:00",
-//       lastUpdated: "2025-04-13T10:20:00",
-//       lastActivity: "Decided not to proceed",
-//       tags: ["Commercial", "Office space"],
-//       company: "Wilson Enterprises",
-//       position: "CEO",
-//       budget: "$2,000,000+",
-//       timeline: "3-6 months",
-//       requirements: "Large office complex, parking, conference facilities",
-//     },
-// ];
+const sampleLeads = [
+  {
+    id: 1,
+    name: "John Smith",
+    email: "john.smith@example.com",
+    phone: "+1234-567-8901",
+    status: "New",
+    source: "Website",
+    interest: "Green Valley Homes",
+    assignedTo: "Alex Johnson",
+    assignedToId: 1,
+    priority: "Medium",
+    notes: "Interested in 3-bedroom properties",
+    created: "2025-04-15T10:30:00",
+    lastUpdated: "2025-04-15T10:30:00",
+    lastActivity: "Added as new lead",
+    tags: ["Residential", "First-time buyer"],
+    company: "Tech Solutions Inc.",
+    position: "Software Engineer",
+    budget: "$500,000 - $700,000",
+    timeline: "3-6 months",
+    requirements: "3 bedrooms, 2 bathrooms, garage, near schools",
+  },
+  // ... (other sample leads remain the same)
+  {
+      id: 2,
+      name: "Emily Johnson",
+      email: "emily.j@example.com",
+      phone: "+1345-678-9012",
+      status: "Contacted",
+      source: "WhatsApp",
+      interest: "Urban Heights Tower",
+      assignedTo: "Maria Rodriguez",
+      assignedToId: 2,
+      priority: "High",
+      created: "2025-04-14T14:45:00",
+      lastUpdated: "2025-04-15T09:15:00",
+      lastActivity: "Scheduled call for tomorrow",
+      tags: ["Commercial", "Investor"],
+      company: "Johnson Investments",
+      position: "Investment Manager",
+      budget: "$1,000,000+",
+      timeline: "1-3 months",
+      requirements: "Office space, downtown location, modern amenities",
+    },
+    {
+      id: 3,
+      name: "Michael Rodriguez",
+      email: "mrodriguez@example.com",
+      phone: "+1456-789-0123",
+      status: "Qualified",
+      source: "Facebook",
+      interest: "Lakeside Villas",
+      assignedTo: "David Wilson",
+      assignedToId: 3,
+      priority: "Medium",
+      created: "2025-04-13T11:20:00",
+      lastUpdated: "2025-04-14T16:30:00",
+      lastActivity: "Completed site visit",
+      tags: ["Residential", "Vacation home"],
+      budget: "$800,000 - $1,200,000",
+      timeline: "6-12 months",
+      requirements: "Waterfront property, 4+ bedrooms, pool",
+    },
+    {
+      id: 4,
+      name: "Sarah Thompson",
+      email: "sthompson@example.com",
+      phone: "+1567-890-1234",
+      status: "Converted",
+      source: "Referral",
+      interest: "Sunset Apartments",
+      assignedTo: "James Chen",
+      assignedToId: 4,
+      priority: "Low",
+      created: "2025-04-12T09:00:00",
+      lastUpdated: "2025-04-14T11:45:00",
+      lastActivity: "Signed purchase agreement",
+      tags: ["Residential", "Downsizing"],
+      company: "Thompson Design",
+      position: "Creative Director",
+      budget: "$300,000 - $450,000",
+      timeline: "Immediate",
+      requirements: "2 bedrooms, modern design, close to downtown",
+    },
+    {
+      id: 5,
+      name: "David Wilson",
+      email: "dwilson@example.com",
+      phone: "+1678-901-2345",
+      status: "Dropped",
+      source: "Direct Call",
+      interest: "Metro Business Park",
+      assignedTo: "Laura Miller",
+      assignedToId: 5,
+      priority: "Low",
+      created: "2025-04-11T15:10:00",
+      lastUpdated: "2025-04-13T10:20:00",
+      lastActivity: "Decided not to proceed",
+      tags: ["Commercial", "Office space"],
+      company: "Wilson Enterprises",
+      position: "CEO",
+      budget: "$2,000,000+",
+      timeline: "3-6 months",
+      requirements: "Large office complex, parking, conference facilities",
+    },
+];
 
 
 function Leads() {
@@ -1764,211 +1751,234 @@ function Leads() {
 
 
   // Load sample data on component mount
-// Replace the existing useEffect in Leads.jsx with this:
-useEffect(() => {  const loadLeads = async () => {
-    try {
-      setLoading(true)
-      console.log('Loading leads...');
+  useEffect(() => {
+    const loadSampleData = () => {
+      try {
+        setLoading(true)
 
-      // Build query parameters
-      const params = {
-        page: currentPage,
-        page_size: pageSize,
+        let currentLeadsSource = [...sampleLeads]; // Work with a copy of the mutable sampleLeads
+        let filteredLeads = currentLeadsSource;
+
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase()
+          filteredLeads = filteredLeads.filter(
+            (lead) =>
+              lead.name.toLowerCase().includes(query) ||
+              lead.email.toLowerCase().includes(query) ||
+              lead.phone.includes(query) ||
+              (lead.company && lead.company.toLowerCase().includes(query)),
+          )
+        }
+
+        if (statusFilter !== "All Statuses") {
+          filteredLeads = filteredLeads.filter((lead) => lead.status === statusFilter)
+        }
+
+        if (sourceFilter !== "All Sources") {
+          filteredLeads = filteredLeads.filter((lead) => lead.source === sourceFilter)
+        }
+
+        if (assigneeFilter !== "All Assignees") {
+          // Ensure assigneeFilter is compared as a number if assignedToId is a number
+          filteredLeads = filteredLeads.filter((lead) => lead.assignedToId === parseInt(assigneeFilter, 10))
+        }
+
+        const totalItems = filteredLeads.length
+        const totalPagesCount = Math.ceil(totalItems / pageSize) || 1; // Ensure totalPages is at least 1
+
+        const startIndex = (currentPage - 1) * pageSize
+        const paginatedLeads = filteredLeads.slice(startIndex, startIndex + pageSize)
+
+        setLeads(paginatedLeads)
+        setTotalLeads(totalItems)
+        setTotalPages(totalPagesCount)
+        setUsersState([...sampleUsers]) // Set users state from sampleUsers
+        setError(null)
+      } catch (err) {
+        console.error("Error loading sample data:", err)
+        setError("Failed to load leads. Please try again.")
+        toast.error("Failed to load leads")
+      } finally {
+        setLoading(false)
       }
-      console.log('Initial params:', params);
-
-      if (searchQuery) {
-        params.search = searchQuery
-      }
-
-      if (statusFilter !== "All Statuses") {
-        params.status = statusFilter
-      }
-
-      if (sourceFilter !== "All Sources") {
-        params.source = sourceFilter
-      }
-
-      if (assigneeFilter !== "All Assignees") {
-        params.assigned_to = assigneeFilter
-      }
-
-      // Fetch leads from API
-      const leadsResponse = await LeadService.getLeads(params)
-      
-      // Fetch users for assignments
-      const usersResponse = await UserService.getUsers()
-
-      // Transform leads data to match frontend format
-      const transformedLeads = leadsResponse.results.map(lead => ({
-        id: lead.id,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        company: lead.company || '',
-        position: lead.position || '',
-        status: lead.status,
-        source: lead.source,
-        interest: lead.interest || '',
-        priority: lead.priority,
-        assignedTo: lead.assigned_to_detail?.first_name + ' ' + lead.assigned_to_detail?.last_name || 'Unassigned',
-        assignedToId: lead.assigned_to || null,
-        assignedToAvatar: lead.assigned_to_detail?.profile_image,
-        budget: lead.budget || '',
-        timeline: lead.timeline || '',
-        requirements: lead.requirements || '',
-        notes: lead.notes || '',
-        tags: lead.tags || [],
-        created: lead.created_at,
-        lastUpdated: lead.updated_at,
-        lastActivity: lead.last_activity || 'No activity recorded',
-      }))
-
-      setLeads(transformedLeads)
-      setTotalLeads(leadsResponse.count)
-      setTotalPages(Math.ceil(leadsResponse.count / pageSize) || 1)
-      setUsersState(usersResponse.results || usersResponse) // Handle different response formats
-      setError(null)    } catch (err) {
-      console.error("Error loading leads:", err);
-      const errorMessage = err.message || "Failed to load leads. Please try again.";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-      console.log('Finished loading leads');
     }
-  }
 
-  loadLeads()
-}, [currentPage, pageSize, refreshTrigger, searchQuery, statusFilter, sourceFilter, assigneeFilter])
+    loadSampleData()
+  }, [currentPage, pageSize, refreshTrigger, searchQuery, statusFilter, sourceFilter, assigneeFilter])
 
   // Handle adding new lead
-// Replace the existing CRUD functions in Leads.jsx with these:
+  const handleAddLead = async (leadData) => {
+    try {
+      setLoading(true)
 
-// Handle adding new lead
-const handleAddLead = async (leadData) => {
-  try {
-    setLoading(true)
-    await LeadService.createLead(leadData)
-    setIsLeadModalOpen(false)
-    setRefreshTrigger((prev) => prev + 1)
-    toast.success("Lead created successfully")
-  } catch (err) {
-    console.error("Error creating lead:", err)
-    toast.error("Failed to create lead")
-  } finally {
-    setLoading(false)
-  }
-}
+      // Corrected ID generation
+      const maxId = sampleLeads.length > 0 ? Math.max(...sampleLeads.map((l) => l.id)) : 0
+      const newLeadId = maxId + 1
 
-// Handle updating lead
-const handleUpdateLead = async (leadData) => {
-  try {
-    setLoading(true)
-    
-    // Transform frontend data to backend format
-    const backendData = {
-      name: leadData.name,
-      email: leadData.email,
-      phone: leadData.phone,
-      company: leadData.company || '',
-      position: leadData.position || '',
-      status: leadData.status,
-      source: leadData.source,
-      interest: leadData.interest || '',
-      priority: leadData.priority,
-      assigned_to: leadData.assignedToId,
-      budget: leadData.budget || '',
-      timeline: leadData.timeline || '',
-      requirements: leadData.requirements || '',
-      notes: leadData.notes || '',
-      tags: leadData.tags || [],
-      last_activity: leadData.lastActivity || '',
-    }
+      const newLead = {
+        ...leadData,
+        id: newLeadId,
+        created: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+        lastActivity: "Added as new lead",
+      }
 
-    await LeadService.updateLead(leadData.id, backendData)
-    setIsDetailsModalOpen(false)
-    setSelectedLead(null)
-    setRefreshTrigger((prev) => prev + 1)
-    toast.success("Lead updated successfully")
-  } catch (err) {
-    console.error("Error updating lead:", err)
-    toast.error("Failed to update lead")
-  } finally {
-    setLoading(false)
-  }
-}
+      sampleLeads.unshift(newLead) // Mutating module-level variable
 
-// Handle deleting lead
-const handleDeleteLead = async (id) => {
-  try {
-    setLoading(true)
-    await LeadService.deleteLead(id)
-    
-    // If current page becomes empty after deletion, go to previous page or first page
-    if (leads.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1)
-    } else {
+      setIsLeadModalOpen(false)
       setRefreshTrigger((prev) => prev + 1)
+      toast.success("Lead created successfully")
+    } catch (err) {
+      console.error("Error creating lead:", err)
+      toast.error("Failed to create lead")
+    } finally {
+      setLoading(false)
     }
-    toast.success("Lead deleted successfully")
-  } catch (err) {
-    console.error("Error deleting lead:", err)
-    toast.error("Failed to delete lead")
-  } finally {
-    setLoading(false)
   }
-}
 
-// Handle importing leads
-const handleImportLeads = async (file) => {
-  try {
-    setLoading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    const response = await LeadService.importLeads(formData)
-    setIsImportModalOpen(false)
-    setRefreshTrigger((prev) => prev + 1)
-    toast.success(response.message || "Leads imported successfully")
-  } catch (err) {
-    console.error("Error importing leads:", err)
-    toast.error("Failed to import leads")
-  } finally {
-    setLoading(false)
+  // Handle updating lead
+  const handleUpdateLead = async (leadData) => {
+    try {
+      setLoading(true)
+
+      const leadIndex = sampleLeads.findIndex((lead) => lead.id === leadData.id)
+      if (leadIndex !== -1) {
+        sampleLeads[leadIndex] = {
+          ...sampleLeads[leadIndex], // Preserve any fields not in leadData if necessary
+          ...leadData,
+          lastUpdated: new Date().toISOString(),
+        }
+      }
+
+      setIsDetailsModalOpen(false)
+      setSelectedLead(null)
+      setRefreshTrigger((prev) => prev + 1)
+      toast.success("Lead updated successfully")
+    } catch (err) {
+      console.error("Error updating lead:", err)
+      toast.error("Failed to update lead")
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-// Handle exporting leads to CSV
-const handleExportLeads = async () => {
-  try {
-    setLoading(true)
-    
-    // Build export parameters
-    const filters = {}
-    if (statusFilter !== "All Statuses") filters.status = statusFilter
-    if (sourceFilter !== "All Sources") filters.source = sourceFilter
-    if (assigneeFilter !== "All Assignees") filters.assigned_to = assigneeFilter
-    if (searchQuery) filters.search = searchQuery
+  // Handle deleting lead
+  const handleDeleteLead = async (id) => {
+    try {
+      setLoading(true)
 
-    const blob = await LeadService.exportLeads(filters)
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.setAttribute("download", "leads_export.csv")
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
+      const leadIndex = sampleLeads.findIndex((lead) => lead.id === id)
+      if (leadIndex !== -1) {
+        sampleLeads.splice(leadIndex, 1) // Mutating module-level variable
+      }
+      
+      // If current page becomes empty after deletion, go to previous page or first page
+      if (leads.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+      toast.success("Lead deleted successfully");
 
-    toast.success("Leads exported successfully")
-  } catch (err) {
-    console.error("Error exporting leads:", err)
-    toast.error("Failed to export leads")
-  } finally {
-    setLoading(false)
+    } catch (err) {
+      console.error("Error deleting lead:", err)
+      toast.error("Failed to delete lead")
+    } finally {
+      setLoading(false)
+    }
   }
-}
+
+  // Handle importing leads
+  const handleImportLeads = (importedLeads) => {
+    try {
+      setLoading(true)
+
+      // Corrected ID generation for batch import
+      let currentMaxId = sampleLeads.length > 0 ? Math.max(...sampleLeads.map((l) => l.id)) : 0
+      
+      const newLeads = importedLeads.map((lead) => {
+        currentMaxId++; // Increment for each new lead
+        return {
+          ...lead, // Spread imported lead data first
+          id: currentMaxId,
+          // Ensure core fields from import are not overwritten by defaults if not present in import
+          created: lead.created || new Date().toISOString(),
+          lastUpdated: lead.lastUpdated || new Date().toISOString(),
+          lastActivity: lead.lastActivity || "Imported lead",
+          // Make sure all required fields for a lead are present
+          assignedToId: lead.assignedToId || (sampleUsers[0]?.id || 1), // Default if not in import
+          assignedTo: lead.assignedTo || (sampleUsers.find(u => u.id === (lead.assignedToId || sampleUsers[0]?.id || 1))?.name || "Unassigned"),
+          tags: lead.tags || [],
+        };
+      });
+
+
+      sampleLeads.unshift(...newLeads) // Mutating module-level variable
+      setIsImportModalOpen(false) // Close modal after import
+      setRefreshTrigger((prev) => prev + 1)
+      toast.success(`${newLeads.length} leads imported successfully`)
+    } catch (err) {
+      console.error("Error importing leads:", err)
+      toast.error("Failed to import leads")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle adding new user
+  const handleAddUser = async () => {
+    alert("Add User functionality would open here (Admin only)")
+  }
+
+  // Handle exporting leads to CSV
+  const handleExportLeads = async () => {
+    try {
+      setLoading(true)
+      // Simulate export
+      // In a real app, you would generate CSV from 'sampleLeads' (or all filtered leads)
+      // For now, just use the current 'leads' on the page for a quick demo
+      if (leads.length === 0) {
+        toast.info("No leads to export.");
+        setLoading(false);
+        return;
+      }
+      const csvHeader = "ID,Name,Email,Phone,Status,Source,Interest,Assigned To,Created,Last Updated\n";
+      const csvRows = leads.map(lead => 
+        [
+          lead.id,
+          `"${lead.name.replace(/"/g, '""')}"`, // Handle quotes in names
+          `"${lead.email.replace(/"/g, '""')}"`,
+          `"${lead.phone}"`,
+          lead.status,
+          lead.source,
+          `"${(lead.interest || '').replace(/"/g, '""')}"`,
+          `"${(lead.assignedTo || '').replace(/"/g, '""')}"`,
+          formatDate(lead.created),
+          formatDate(lead.lastUpdated)
+        ].join(',')
+      ).join('\n');
+      
+      const csvContent = csvHeader + csvRows;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      if (link.download !== undefined) { // Feature detection
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", "leads_export.csv");
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }
+
+      toast.success("Leads exported successfully")
+    } catch (err) {
+      console.error("Error exporting leads:", err)
+      toast.error("Failed to export leads")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Get status badge class
   const getStatusBadgeClass = (status) => {
@@ -2026,7 +2036,7 @@ const handleExportLeads = async () => {
   }
 
   // Format date for display
-  const formatDateDisplay = (dateString) => { 
+  const formatDateDisplay = (dateString) => { // Renamed to avoid conflict with LeadDetailsDialog's formatDate
     if (!dateString) return ""
     try {
       const date = new Date(dateString)
@@ -2035,8 +2045,6 @@ const handleExportLeads = async () => {
       return dateString; // Fallback
     }
   }
-
-  
 
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
@@ -2090,7 +2098,16 @@ const handleExportLeads = async () => {
                 </button>
               )}
 
-              
+              {hasPermission("create_users") && (
+                <button
+                  onClick={handleAddUser}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 shadow-sm"
+                  disabled={loading}
+                >
+                  <UserPlus size={18} />
+                  <span>Add User</span>
+                </button>
+              )}
             </div>
           </div>
         </header>

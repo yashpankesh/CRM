@@ -11,66 +11,6 @@ const api = axios.create({
     withCredentials: true, // Send cookies with requests
 });
 
-// Add a request interceptor to handle token refresh
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach(prom => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-    failedQueue = [];
-};
-
-api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        // If error is 401 and we haven't tried to refresh yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                // If refresh is in progress, queue the request
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                .then(() => {
-                    return api(originalRequest);
-                })
-                .catch(err => {
-                    return Promise.reject(err);
-                });
-            }
-
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            try {
-                // Attempt to refresh token
-                const response = await api.post('/auth/token/refresh/');
-                isRefreshing = false;
-                processQueue(null);
-                
-                return api(originalRequest);
-            } catch (refreshError) {
-                isRefreshing = false;
-                processQueue(refreshError);
-                
-                // If refresh failed, redirect to login only if not already on login page
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
-                }
-                return Promise.reject(refreshError);
-            }
-        }
-        return Promise.reject(error);
-    }
-);
-
 const authService = {
     // Register new user (manager or agent)
     register: async (userData) => {
