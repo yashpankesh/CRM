@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       await authService.requestPasswordReset(email);
       setIsSubmitted(true);
       setMessage("Password reset instructions have been sent to your email.");
-    } catch (error) {
+    } catch {
       // We don't want to reveal if an email exists or not for security reasons
       // So we show the same success message regardless
       setIsSubmitted(true);

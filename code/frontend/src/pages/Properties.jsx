@@ -1,85 +1,83 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useTheme } from "@/context/ThemeContext";
-import { useAuth } from "@/context/AuthContext";
-import Navbar from "@/components/common/Navbar";
-import propertyService from "@/services/propertyService";
-import { toast } from "react-toastify";
-import { formatCurrency } from "@/utils/formatters";
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { useTheme } from "@/context/ThemeContext"
+import { useAuth } from "@/context/AuthContext"
+// import Navbar from "@/components/common/Navbar"
+import propertyService from "@/services/propertyService"
+import { toast } from "react-toastify"
+import { formatCurrency } from "@/utils/formatters"
 
 const Properties = () => {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [propertyType, setPropertyType] = useState("All Types");
-  const [propertyStatus, setPropertyStatus] = useState("All Statuses");
-  const [viewType, setViewType] = useState("grid");
-  const { theme } = useTheme();
-  const { user } = useAuth();
-  const isDark = theme === "dark";
+  const [searchQuery, setSearchQuery] = useState("")
+  const [propertyType, setPropertyType] = useState("All Types")
+  const [propertyStatus, setPropertyStatus] = useState("All Statuses")
+  const { theme } = useTheme()
+  const { user } = useAuth()
+  const isDark = theme === "dark"
 
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [properties, setProperties] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchProperties = async () => {
       if (!user) {
-        setError("Please log in to view properties");
-        setLoading(false);
-        return;
+        setError("Please log in to view properties")
+        setLoading(false)
+        return
       }
 
       try {
-        setLoading(true);
-        const data = await propertyService.getProperties();
+        setLoading(true)
+        const data = await propertyService.getProperties()
         if (Array.isArray(data)) {
-          setProperties(data);
-          setError(null);
+          setProperties(data)
+          setError(null)
         } else {
-          setError("Invalid data format received from server");
+          setError("Invalid data format received from server")
         }
       } catch (err) {
-        setError(err.response?.status === 401 
-          ? "Please log in to view properties" 
-          : "Failed to load properties. Please try again later.");
+        setError(
+          err.response?.status === 401
+            ? "Please log in to view properties"
+            : "Failed to load properties. Please try again later.",
+        )
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProperties();
-  }, [user]);
+    fetchProperties()
+  }, [user])
 
   // Filter properties
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
       property.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.location?.toLowerCase().includes(searchQuery.toLowerCase());
+      property.location?.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesType =
-      propertyType === "All Types" ||
-      property.property_type?.toLowerCase() === propertyType.toLowerCase();
+      propertyType === "All Types" || property.property_type?.toLowerCase() === propertyType.toLowerCase()
 
     const matchesStatus =
-      propertyStatus === "All Statuses" ||
-      property.status?.toLowerCase() === propertyStatus.toLowerCase();
+      propertyStatus === "All Statuses" || property.status?.toLowerCase() === propertyStatus.toLowerCase()
 
-    return matchesSearch && matchesType && matchesStatus;
-  });
+    return matchesSearch && matchesType && matchesStatus
+  })
 
   const handleDelete = async (propertyId) => {
     if (!window.confirm("Are you sure you want to delete this property?")) {
-      return;
+      return
     }
 
     try {
-      await propertyService.deleteProperty(propertyId);
-      setProperties(properties.filter((p) => p.id !== propertyId));
-      toast.success("Property deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete property");
+      await propertyService.deleteProperty(propertyId)
+      setProperties(properties.filter((p) => p.id !== propertyId))
+      toast.success("Property deleted successfully")
+    } catch {
+      toast.error("Failed to delete property")
     }
-  };
+  }
 
   // Status configuration
   const STATUS_CONFIG = {
@@ -87,12 +85,13 @@ const Properties = () => {
     under_construction: { badge: "bg-yellow-100 text-yellow-800", label: "Under Construction" },
     coming_soon: { badge: "bg-blue-100 text-blue-800", label: "Coming Soon" },
     sold_out: { badge: "bg-red-100 text-red-800", label: "Sold Out" },
-  };
+  }
 
-  const getStatusConfig = (status) => STATUS_CONFIG[status] || {
-    badge: "bg-gray-100 text-gray-800",
-    label: status,
-  };
+  const getStatusConfig = (status) =>
+    STATUS_CONFIG[status] || {
+      badge: "bg-gray-100 text-gray-800",
+      label: status,
+    }
 
   // Property type icons
   const PROPERTY_TYPE_ICONS = {
@@ -102,27 +101,66 @@ const Properties = () => {
     apartment: "fa-building-user",
     villa: "fa-house-chimney",
     plot: "fa-vector-square",
-  };
+  }
 
-  const getPropertyIcon = (type) => PROPERTY_TYPE_ICONS[type] || "fa-building";
+  const getPropertyIcon = (type) => PROPERTY_TYPE_ICONS[type] || "fa-building"
 
-  // Grid View Card Component
-  const GridViewCard = ({ property }) => {
-    const [imageError, setImageError] = useState(false);
-    const statusConfig = getStatusConfig(property.status);
+  // Edit Icon SVG Component
+  const EditIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"></path>
+    </svg>
+  )
 
-    const imageUrl = imageError || !property.images || property.images.length === 0
-      ? '/placeholder.svg'
-      : propertyService.getImageUrl(property.images[0].image);
+  // Delete Icon SVG Component
+  const DeleteIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18"></path>
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+    </svg>
+  )
+
+  // Property Card Component
+  const PropertyCard = ({ property }) => {
+    const [imageError, setImageError] = useState(false)
+    const statusConfig = getStatusConfig(property.status)
+
+    const imageUrl =
+      imageError || !property.images || property.images.length === 0
+        ? "/placeholder.svg"
+        : propertyService.getImageUrl(property.images[0].image)
 
     return (
-      <div className={`rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl ${
-        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-      }`}>
+      <div
+        className={`rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl ${
+          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        }`}
+      >
         {/* Image Section */}
         <div className="relative h-56 overflow-hidden group">
           <img
-            src={imageUrl}
+            src={imageUrl || "/placeholder.svg"}
             alt={property.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImageError(true)}
@@ -140,9 +178,7 @@ const Properties = () => {
               <i className="fas fa-map-marker-alt mr-2"></i>
               <span className="line-clamp-1">{property.location}</span>
             </p>
-            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-              ₹{formatCurrency(property.price)}
-            </p>
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">₹{formatCurrency(property.price)}</p>
           </div>
 
           {/* Property Features */}
@@ -172,10 +208,7 @@ const Properties = () => {
             <div className="mb-4">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{property.units_available_display}</p>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-blue-500 rounded-full" 
-                  style={{ width: `${property.progress || 0}%` }}
-                />
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${property.progress || 0}%` }} />
               </div>
             </div>
           )}
@@ -192,151 +225,39 @@ const Properties = () => {
             <div className="flex">
               <Link
                 to={`/dashboard/properties/edit/${property.id}`}
-                className="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 mr-2"
+                className="flex items-center justify-center w-10 h-10 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 mr-2 border border-gray-200"
                 title="Edit Property"
               >
-                <i className="fas fa-pencil"></i>
+                <span className="text-blue-500">
+                  <EditIcon />
+                </span>
               </Link>
               <button
                 onClick={() => handleDelete(property.id)}
-                className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                className="flex items-center justify-center w-10 h-10 bg-white rounded-full hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
                 title="Delete Property"
               >
-                <i className="fas fa-trash"></i>
+                <span className="text-red-500">
+                  <DeleteIcon />
+                </span>
               </button>
             </div>
           </div>
         </div>
       </div>
-    );
-  };
-
-  // List View Card Component
-  const ListViewCard = ({ property }) => {
-    const [imageError, setImageError] = useState(false);
-    const statusConfig = getStatusConfig(property.status);
-
-    const imageUrl = imageError || !property.images || property.images.length === 0
-      ? '/placeholder.svg'
-      : propertyService.getImageUrl(property.images[0].image);
-
-    return (
-      <div className={`rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl ${
-        isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-      }`}>
-        <div className="flex flex-col md:flex-row">
-          {/* Image Section */}
-          <div className="relative w-full md:w-64 h-48 md:h-auto overflow-hidden">
-            <img
-              src={imageUrl}
-              alt={property.title}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-            <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${statusConfig.badge}`}>
-              {statusConfig.label}
-            </span>
-          </div>
-
-          {/* Content Section */}
-          <div className="flex-1 p-5">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-              <div className="mb-3 md:mb-0">
-                <h3 className="text-lg font-bold">{property.title}</h3>
-                <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <i className="fas fa-map-marker-alt mr-2"></i>
-                  {property.location}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-black dark:text-black">
-                  ₹{formatCurrency(property.price)}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatCurrency(property.area)} sq.ft
-                </p>
-              </div>
-            </div>
-
-            {/* Property Features */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div className="flex items-center">
-                <i className={`fas ${getPropertyIcon(property.property_type)} mr-2 text-gray-500 dark:text-gray-400`}></i>
-                <span className="text-sm capitalize">{property.property_type}</span>
-              </div>
-              {property.bhk && (
-                <div className="flex items-center">
-                  <i className="fas fa-bed mr-2 text-gray-500 dark:text-gray-400"></i>
-                  <span className="text-sm">{property.bhk} BHK</span>
-                </div>
-              )}
-              <div className="flex items-center">
-                <i className="fas fa-ruler-combined mr-2 text-gray-500 dark:text-gray-400"></i>
-                <span className="text-sm">{formatCurrency(property.area)} sq.ft</span>
-              </div>
-              <div className="flex items-center">
-                <i className="fas fa-calendar-day mr-2 text-gray-500 dark:text-gray-400"></i>
-                <span className="text-sm">{property.possession_timeline || "Ready"}</span>
-              </div>
-            </div>
-
-            {/* Progress Bar (if applicable) */}
-            {property.units_available_display && (
-              <div className="mb-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{property.units_available_display}</p>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full" 
-                    style={{ width: `${property.progress || 0}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between">
-              <Link
-                to={`/dashboard/properties/${property.id}`}
-                className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 mr-2"
-              >
-                <i className="fas fa-eye mr-2"></i>
-                View Details
-              </Link>
-              <div className="flex">
-                <Link
-                  to={`/dashboard/properties/edit/${property.id}`}
-                  className="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 mr-2"
-                  title="Edit Property"
-                >
-                  <i className="fas fa-pencil"></i>
-                </Link>
-                <button
-                  onClick={() => handleDelete(property.id)}
-                  className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-                  title="Delete Property"
-                >
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-900 text-white" : "bg-gray-50"}`}>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold">Property Listings</h1>
-              <p className="text-gray-500 dark:text-gray-400">
-                Manage your real estate properties
-              </p>
+              <p className="text-gray-500 dark:text-gray-400">Manage your real estate properties</p>
             </div>
             <Link
               to="/dashboard/properties/add"
@@ -366,7 +287,7 @@ const Properties = () => {
               />
             </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <select
               value={propertyType}
@@ -383,7 +304,7 @@ const Properties = () => {
               <option value="land">Land</option>
               <option value="plot">Plot</option>
             </select>
-            
+
             <select
               value={propertyStatus}
               onChange={(e) => setPropertyStatus(e.target.value)}
@@ -397,35 +318,6 @@ const Properties = () => {
               <option value="coming_soon">Coming Soon</option>
               <option value="sold_out">Sold Out</option>
             </select>
-            
-            <div className={`flex rounded-lg border overflow-hidden ${
-              isDark ? "border-gray-700" : "border-gray-300"
-            }`}>
-              <button
-                onClick={() => setViewType("grid")}
-                className={`px-4 py-2.5 flex items-center justify-center transition-colors duration-200 ${
-                  viewType === "grid" 
-                    ? isDark ? "bg-gray-700" : "bg-gray-200"
-                    : isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                }`}
-              >
-                <i className="fas fa-grid-2 mr-2"></i>
-                Grid
-              </button>
-              <button
-                onClick={() => setViewType("list")}
-                className={`px-4 py-2.5 flex items-center justify-center transition-colors duration-200 border-l ${
-                  isDark ? "border-gray-700" : "border-gray-300"
-                } ${
-                  viewType === "list" 
-                    ? isDark ? "bg-gray-700" : "bg-gray-200"
-                    : isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                }`}
-              >
-                <i className="fas fa-list mr-2"></i>
-                List
-              </button>
-            </div>
           </div>
         </div>
 
@@ -465,22 +357,16 @@ const Properties = () => {
               Add New Property
             </Link>
           </div>
-        ) : viewType === "grid" ? (
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProperties.map((property) => (
-              <GridViewCard key={property.id} property={property} />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {filteredProperties.map((property) => (
-              <ListViewCard key={property.id} property={property} />
+              <PropertyCard key={property.id} property={property} />
             ))}
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Properties;
+export default Properties
