@@ -1,0 +1,168 @@
+├── CRM-api
+│   ├── .gitattributes
+│   ├── .gitignore
+│   ├── LICENSE
+│   ├── README.md
+│   ├── apps
+│   │   ├── .gitignore
+│   │   ├── __init__.py
+│   │   ├── accounts
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── authentication.py
+│   │   │   ├── models.py
+│   │   │   ├── permission.py
+│   │   │   ├── serializers.py
+│   │   │   ├── signals.py
+│   │   │   ├── tests.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   ├── leads
+│   │   │   ├── __init__.py
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py
+│   │   │   ├── permissions.py
+│   │   │   ├── serializers.py
+│   │   │   ├── tests.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   └── property
+│   │       ├── __init__.py
+│   │       ├── admin.py
+│   │       ├── apps.py
+│   │       ├── models.py
+│   │       ├── serializers.py
+│   │       ├── tests.py
+│   │       ├── urls.py
+│   │       └── views.py
+│   ├── crmSrc
+│   │   ├── .gitignore
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── manage.py
+│   ├── media
+│   │   ├── profile_images
+│   │   │   ├── afb3622de041077a1f7c2f6432a60ba1.jpg
+│   │   │   ├── e09157919da1f6e0105391ff99569ee9.jpg
+│   │   │   ├── google-symbol-logo-black-design-illustration-free-vector.jpg
+│   │   │   ├── test_profile.png
+│   │   │   ├── yash.png
+│   │   │   └── yashp.png
+│   │   └── property_images
+│   │       ├── 1kalrav.png
+│   │       ├── 1kalrav_vwQ9gHu.png
+│   │       ├── 24a5652ff0b681f3b7ecead08949a890c6d76d2f-3038x1538_1.jpg
+│   │       ├── 24a5652ff0b681f3b7ecead08949a890c6d76d2f-3038x1538_1_txD0bQd.jpg
+│   │       ├── 2kalrav.png
+│   │       ├── 356a1751c4cac865f72608fefcb48a54b38fc6a9-1600x1600_1.jpg
+│   │       ├── 356a1751c4cac865f72608fefcb48a54b38fc6a9-1600x1600_1_HdM7gV3.jpg
+│   │       ├── 3kalrav.png
+│   │       ├── 4kalrav.png
+│   │       ├── 5kalrav.png
+│   │       ├── 637d14279c23a42a08364b93cebb389b72628cbd-1600x1065.jpg
+│   │       ├── 6kalrav.png
+│   │       ├── 6kalrav_7pu0kCY.png
+│   │       ├── M1-CqADuXYe.jpg
+│   │       ├── M1-CqADuXYe_WPKXOYa.jpg
+│   │       ├── M2-CGyNLvNl.jpg
+│   │       ├── M3-DPdAa27P.jpg
+│   │       ├── M4-Bjmkn_9y.jpg
+│   │       ├── M5-BP1axhnC.jpg
+│   │       ├── M6-Bmh9Sl9B.jpg
+│   │       ├── M7-BrfTuDRh.jpg
+│   │       ├── M8-z7vbV9c7.jpg
+│   │       ├── M8-z7vbV9c7_2i5lcxw.jpg
+│   │       ├── M8-z7vbV9c7_flbGO1K.jpg
+│   │       ├── SI-B86Y9jjb.png
+│   │       ├── SI-B86Y9jjb_l4N3dxz.png
+│   │       ├── SI10-cn8byIbh.png
+│   │       ├── Si6-BY_b2SDO.png
+│   │       ├── a7ce0b37bc6d03a1c4c05aaf8ac7c067440abcf5-3038x1538.jpg
+│   │       └── download.jpg
+│   └── requirements.txt
+├── CRM-portal
+│   ├── .gitattributes
+│   ├── .gitignore
+│   ├── LICENSE
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── image.png
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   ├── dashboard.svg
+│   │   │   ├── image.png
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── common
+│   │   │   │   ├── DashboardLayout.jsx
+│   │   │   │   ├── Navbar.jsx
+│   │   │   │   ├── ProtectedRoute.jsx
+│   │   │   │   ├── RoleBasedWrapper.jsx
+│   │   │   │   ├── SearchResultModal.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   └── Spinner.jsx
+│   │   │   ├── leads
+│   │   │   │   ├── AddLeadModal.jsx
+│   │   │   │   ├── ImportLeadsDialog.jsx
+│   │   │   │   └── LeadDetailsDialog.jsx
+│   │   │   ├── pages
+│   │   │   │   └── Profile.jsx
+│   │   │   ├── properties
+│   │   │   │   └── add-property-form.jsx
+│   │   │   ├── property
+│   │   │   │   ├── add-property-form.jsx
+│   │   │   │   ├── new-add-property-form.jsx
+│   │   │   │   └── property-detail-debug.jsx
+│   │   │   └── users
+│   │   │       └── AddUserModal.jsx
+│   │   ├── context
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
+│   │   ├── data
+│   │   │   └── properties.js
+│   │   ├── hooks
+│   │   │   ├── useLeadStats.jsx
+│   │   │   └── useUserRole.jsx
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── AddProperty.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── EditProperty.jsx
+│   │   │   ├── ForgotPassword.jsx
+│   │   │   ├── Leads.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Properties.jsx
+│   │   │   ├── PropertyDetail.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Settings.jsx
+│   │   │   ├── SiteVisits.jsx
+│   │   │   ├── TeamManagement.jsx
+│   │   │   └── Unauthorized.jsx
+│   │   ├── services
+│   │   │   ├── UserService.js
+│   │   │   ├── api.js
+│   │   │   ├── authService.js
+│   │   │   ├── leadService.js
+│   │   │   ├── property-api.js
+│   │   │   └── propertyService.js
+│   │   └── utils
+│   │       ├── auth.js
+│   │       ├── formatters.js
+│   │       └── mediaHelper.js
+│   ├── tailwind.config.js
+│   └── vite.config.js
+└── generate - tree - dir .py
